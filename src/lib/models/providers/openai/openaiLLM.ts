@@ -19,6 +19,7 @@ import {
 } from 'openai/resources/index.mjs';
 import { Message } from '@/lib/types';
 import { repairJson } from '@toolsycc/json-repair';
+import { sanitizeJsonResponse } from '@/lib/utils/json';
 
 type OpenAIConfig = {
   apiKey: string;
@@ -214,13 +215,10 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
 
     if (response.choices && response.choices.length > 0) {
       try {
-        return input.schema.parse(
-          JSON.parse(
-            repairJson(response.choices[0].message.content!, {
-              extractJson: true,
-            }) as string,
-          ),
-        ) as T;
+        const content = response.choices[0].message.content!;
+        const sanitized = sanitizeJsonResponse(content);
+        const repaired = repairJson(sanitized, { extractJson: true }) as string;
+        return input.schema.parse(JSON.parse(repaired)) as T;
       } catch (err) {
         throw new Error(`Error parsing response from OpenAI: ${err}`);
       }

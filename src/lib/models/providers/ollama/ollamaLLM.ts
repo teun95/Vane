@@ -12,6 +12,7 @@ import { parse } from 'partial-json';
 import crypto from 'crypto';
 import { Message } from '@/lib/types';
 import { repairJson } from '@toolsycc/json-repair';
+import { sanitizeJsonResponse } from '@/lib/utils/json';
 
 type OllamaConfig = {
   baseURL: string;
@@ -208,13 +209,9 @@ class OllamaLLM extends BaseLLM<OllamaConfig> {
     });
 
     try {
-      return input.schema.parse(
-        JSON.parse(
-          repairJson(response.message.content, {
-            extractJson: true,
-          }) as string,
-        ),
-      ) as T;
+      const sanitized = sanitizeJsonResponse(response.message.content);
+      const repaired = repairJson(sanitized, { extractJson: true }) as string;
+      return input.schema.parse(JSON.parse(repaired)) as T;
     } catch (err) {
       throw new Error(`Error parsing response from Ollama: ${err}`);
     }
