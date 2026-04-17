@@ -1,4 +1,4 @@
-FROM node:24.5.0-slim AS builder
+FROM node:20-slim AS builder
 
 RUN apt-get update && apt-get install -y python3 python3-pip sqlite3 && rm -rf /var/lib/apt/lists/*
 
@@ -15,7 +15,7 @@ COPY drizzle ./drizzle
 RUN mkdir -p /home/vane/data
 RUN yarn build
 
-FROM node:24.5.0-slim
+FROM node:20-slim
 
 RUN apt-get update && apt-get install -y \
     python3-dev python3-babel python3-venv python-is-python3 \
@@ -34,7 +34,7 @@ COPY drizzle ./drizzle
 
 RUN mkdir /home/vane/uploads
 
-RUN yarn add playwright
+RUN yarn add playwright --ignore-engines
 RUN yarn playwright install --with-deps --only-shell chromium
 
 EXPOSE 3000

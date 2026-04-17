@@ -44,14 +44,14 @@ docker push registry.jthuis.de/vane:latest
 ### Run the Container
 
 ```bash
-docker run -d -p 3000:3000 -v vane-data:/home/vane/data --name vane registry.jthuis.de/vane:latest
+docker run -d -p 3000:3000 -e SEARXNG_API_URL=http://localhost:8080 -v vane-data:/home/vane/data --name vane registry.jthuis.de/vane:latest
 ```
 
-This will start the Vane container with the bundled SearxNG search engine. Once running, open your browser and navigate to http://localhost:3000.
+This will start the Vane container. **Note**: A separate SearxNG instance is required and must be available at the `SEARXNG_API_URL` address. See below for configuration.
 
 ### Using a Custom SearxNG Instance
 
-If you already have SearxNG running, you can use the slim version or set the `SEARXNG_API_URL` environment variable:
+If you already have SearxNG running (which is now the required configuration), set the `SEARXNG_API_URL` environment variable:
 
 ```bash
 docker run -d -p 3000:3000 -e SEARXNG_API_URL=http://your-searxng-url:8080 -v vane-data:/home/vane/data --name vane registry.jthuis.de/vane:latest
