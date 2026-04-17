@@ -209,10 +209,18 @@ class OllamaLLM extends BaseLLM<OllamaConfig> {
     });
 
     try {
-      const sanitized = sanitizeJsonResponse(response.message.content);
+      const content = response.message.content;
+      console.log('[DEBUG Ollama] Raw content:', JSON.stringify(content));
+      const sanitized = sanitizeJsonResponse(content);
+      console.log('[DEBUG Ollama] After sanitizeJsonResponse:', JSON.stringify(sanitized));
       const repaired = repairJson(sanitized, { extractJson: true }) as string;
+      console.log('[DEBUG Ollama] After repairJson:', JSON.stringify(repaired));
       return input.schema.parse(JSON.parse(repaired)) as T;
     } catch (err) {
+      console.error('[ERROR Ollama] Failed to parse response:', {
+        rawContent: response.message.content,
+        error: err,
+      });
       throw new Error(`Error parsing response from Ollama: ${err}`);
     }
   }

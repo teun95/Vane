@@ -196,6 +196,7 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
   }
 
   async generateObject<T>(input: GenerateObjectInput): Promise<T> {
+    console.log('[DEBUG OpenAI generateObject] START - model:', this.config.model);
     const response = await this.openAIClient.chat.completions.parse({
       messages: this.convertToOpenAIMessages(input.messages),
       model: this.config.model,
@@ -216,10 +217,17 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
     if (response.choices && response.choices.length > 0) {
       try {
         const content = response.choices[0].message.content!;
+        console.log('[DEBUG OpenAI] Raw content:', JSON.stringify(content));
         const sanitized = sanitizeJsonResponse(content);
+        console.log('[DEBUG OpenAI] After sanitizeJsonResponse:', JSON.stringify(sanitized));
         const repaired = repairJson(sanitized, { extractJson: true }) as string;
+        console.log('[DEBUG OpenAI] After repairJson:', JSON.stringify(repaired));
         return input.schema.parse(JSON.parse(repaired)) as T;
       } catch (err) {
+        console.error('[ERROR OpenAI] Failed to parse response:', {
+          rawContent: response.choices[0].message.content,
+          error: err,
+        });
         throw new Error(`Error parsing response from OpenAI: ${err}`);
       }
     }
@@ -251,18 +259,31 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
 
     for await (const chunk of stream) {
       if (chunk.type === 'response.output_text.delta' && chunk.delta) {
+        console.log('[DEBUG OpenAI streamObject] Raw delta:', JSON.stringify(chunk.delta));
         recievedObj += chunk.delta;
 
         try {
-          yield parse(recievedObj) as T;
+          const sanitized = sanitizeJsonResponse(recievedObj);
+          console.log('[DEBUG OpenAI streamObject] After sanitize:', JSON.stringify(sanitized));
+          yield parse(sanitized) as T;
         } catch (err) {
-          console.log('Error parsing partial object from OpenAI:', err);
+          console.error('[ERROR OpenAI streamObject] Partial parse error:', {
+            receivedObj: recievedObj,
+            error: err,
+          });
           yield {} as T;
         }
       } else if (chunk.type === 'response.output_text.done' && chunk.text) {
+        console.log('[DEBUG OpenAI streamObject] Final text:', JSON.stringify(chunk.text));
         try {
-          yield parse(chunk.text) as T;
+          const sanitized = sanitizeJsonResponse(chunk.text);
+          console.log('[DEBUG OpenAI streamObject] After sanitize:', JSON.stringify(sanitized));
+          yield parse(sanitized) as T;
         } catch (err) {
+          console.error('[ERROR OpenAI streamObject] Final parse error:', {
+            text: chunk.text,
+            error: err,
+          });
           throw new Error(`Error parsing response from OpenAI: ${err}`);
         }
       }

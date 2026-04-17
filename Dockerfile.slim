@@ -30,8 +30,8 @@ COPY drizzle ./drizzle
 
 RUN mkdir /home/vane/uploads
 
-RUN yarn add playwright --ignore-engines
-RUN yarn playwright install --with-deps --only-shell chromium
+RUN npm install playwright --no-save --legacy-peer-deps
+RUN npx playwright install --with-deps chromium
 
 EXPOSE 3000
 

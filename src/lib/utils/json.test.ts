@@ -35,4 +35,14 @@ describe('sanitizeJsonResponse', () => {
 		const input = '  plain text  ';
 		expect(sanitizeJsonResponse(input)).toBe('plain text');
 	});
+
+	it('should extract JSON from text with prefix', () => {
+		const input = 'Here is the JSON: ```json\n{"key": "value"}\n```';
+		expect(sanitizeJsonResponse(input)).toBe('{"key": "value"}');
+	});
+
+	it('should extract JSON from text with prefix and suffix', () => {
+		const input = '```json\n{"key": "value"}\n``` Hope this helps!';
+		expect(sanitizeJsonResponse(input)).toBe('{"key": "value"}');
+	});
 });

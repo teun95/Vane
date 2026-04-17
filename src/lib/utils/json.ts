@@ -5,13 +5,15 @@ import { repairJson } from '@toolsycc/json-repair';
  * Handles formats like:
  *   ```json ... ```
  *   ``` ... ```
+ *   Here's the JSON: ```json ... ```
  *
  * @param response - Raw LLM response string
  * @returns Sanitized JSON string ready for JSON.parse
  */
 export function sanitizeJsonResponse(response: string): string {
 	// Pattern to match markdown code blocks with optional language identifier
-	const markdownPattern = /^\s*```(?:json)?\s*([\s\S]*?)\s*```\s*$/i;
+	// Does NOT require the code block to span the entire string
+	const markdownPattern = /```(?:json)?\s*([\s\S]*?)```/i;
 
 	const match = response.match(markdownPattern);
 	if (match && match[1]) {
