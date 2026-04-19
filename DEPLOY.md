@@ -30,12 +30,16 @@ docker push registry.jthuis.de/vane:latest
 docker build -t registry.jthuis.de/vane:latest . && docker push registry.jthuis.de/vane:latest
 ```
 
-### Optional: Build with BuildKit
+### Build with Cache (Recommended)
+
+Uses BuildKit inline cache for faster subsequent builds by reusing layers from the registry:
 
 ```bash
-DOCKER_BUILDKIT=1 docker build -t registry.jthuis.de/vane:latest .
+docker build -f Dockerfile.slim -t registry.jthuis.de/vane:latest --cache-from registry.jthuis.de/vane:latest .
 docker push registry.jthuis.de/vane:latest
 ```
+
+**Note**: Requires BuildKit enabled in Docker (`"buildkit": "true"` in Docker config features). Once enabled in your Docker configuration, you can use the shorter `--cache-from` command above without additional flags.
 
 ---
 

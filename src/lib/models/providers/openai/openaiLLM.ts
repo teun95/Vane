@@ -197,7 +197,9 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
 
   async generateObject<T>(input: GenerateObjectInput): Promise<T> {
     console.log('[DEBUG OpenAI generateObject] START - model:', this.config.model);
-    const response = await this.openAIClient.chat.completions.parse({
+    
+    // Use .create() instead of .parse() to capture raw content before SDK parsing
+    const response = await this.openAIClient.chat.completions.create({
       messages: this.convertToOpenAIMessages(input.messages),
       model: this.config.model,
       temperature:
