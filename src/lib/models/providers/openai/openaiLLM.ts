@@ -224,7 +224,11 @@ class OpenAILLM extends BaseLLM<OpenAIConfig> {
         console.log('[DEBUG OpenAI] After sanitizeJsonResponse:', JSON.stringify(sanitized));
         const repaired = repairJson(sanitized, { extractJson: true }) as string;
         console.log('[DEBUG OpenAI] After repairJson:', JSON.stringify(repaired));
-        return input.schema.parse(JSON.parse(repaired)) as T;
+        console.log('[DEBUG OpenAI] Type of repaired:', typeof repaired, Array.isArray(repaired) ? 'array' : 'not-array');
+        const parsedJson = JSON.parse(repaired);
+        console.log('[DEBUG OpenAI] After JSON.parse, type:', typeof parsedJson);
+        console.log('[DEBUG OpenAI] About to call schema.parse with:', JSON.stringify(parsedJson).substring(0, 200));
+        return input.schema.parse(parsedJson) as T;
       } catch (err) {
         console.error('[ERROR OpenAI] Failed to parse response:', {
           rawContent: response.choices[0].message.content,
